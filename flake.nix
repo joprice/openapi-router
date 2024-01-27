@@ -50,6 +50,7 @@
             ];
             propagatedBuildInputs = with pkgs.ocamlPackages; [
               merlin
+              ocaml-lsp
             ];
           };
         };

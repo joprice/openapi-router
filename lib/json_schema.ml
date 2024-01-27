@@ -31,6 +31,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 open Core
 module Yojson_conv = Ppx_yojson_conv_lib.Yojson_conv
+open Ppx_yojson_conv_lib.Yojson_conv.Primitives
 
 type 'a map = (string * 'a) list [@@deriving show]
 
