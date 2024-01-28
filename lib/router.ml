@@ -411,7 +411,7 @@ module Make (Config : Config_Type) = struct
       routes = a.routes @ [Config.patch orig_path handler];
     }
 
-  let build router =
+  let build ?(version="3") router =
     router.routes
     @ [
         Config.json_route (Spec.yojson_of_t router.spec |> Yojson.Safe.to_string);
@@ -422,7 +422,7 @@ module Make (Config : Config_Type) = struct
     <title>Swagger %s UI</title>
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui.css"
+      href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@%s/swagger-ui.css"
     />
     <link
       rel="shortcut icon"
@@ -431,7 +431,7 @@ module Make (Config : Config_Type) = struct
   </head>
   <body>
     <div id="swagger-ui"></div>
-    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@%s/swagger-ui-bundle.js"></script>
     <script>
       const ui = SwaggerUIBundle({
         url: "%s",
@@ -450,7 +450,7 @@ module Make (Config : Config_Type) = struct
   </body>
 </html>
 |}
-             router.spec.info.title Config.json_path Config.doc_path);
+             version version router.spec.info.title Config.json_path Config.doc_path);
       ]
     |> Config.build_routes
 end

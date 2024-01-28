@@ -227,5 +227,5 @@ module Make : functor (Config : Config_Type) -> sig
     t ->
     t
 
-  val build : t -> Config.app
+  val build : ?version:string -> t -> Config.app
 end
