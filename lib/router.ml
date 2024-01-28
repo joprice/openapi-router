@@ -450,7 +450,7 @@ module Make (Config : Config_Type) = struct
   </body>
 </html>
 |}
-             version version router.spec.info.title Config.json_path Config.doc_path);
+             router.spec.info.title version version Config.json_path Config.doc_path);
       ]
     |> Config.build_routes
 end
