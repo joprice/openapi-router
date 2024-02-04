@@ -71,6 +71,8 @@ module Make (Config : Config_Type) = struct
   type t = {
     spec : Spec.t;
     routes : Config.route list;
+    schemas : string list;
+    operation_ids : string list;
   }
 
   let empty =
@@ -80,6 +82,8 @@ module Make (Config : Config_Type) = struct
           ~info:(Spec.make_info_object ~title:"Application" ~version:"0.1" ())
           ~paths:[] ();
       routes = [];
+      schemas = [];
+      operation_ids = [];
     }
 
   let title t r =
@@ -113,7 +117,13 @@ module Make (Config : Config_Type) = struct
   let version v r =
     { r with spec = { r.spec with info = { r.spec.info with version = v } } }
 
+  let validate_schemas schema a =
+    if List.mem ~equal:( = ) a.schemas schema then
+      failwith ("Attempted to register duplicate schema name: " ^ schema)
+    else { a with schemas = schema :: a.schemas }
+
   let schema n s a =
+    let a = validate_schemas n a in
     let open Spec in
     Option.value ~default:(make_components_object ()) a.spec.components
     |> (fun cs ->
@@ -213,15 +223,28 @@ module Make (Config : Config_Type) = struct
   let link_ref x = "#/components/link/" ^ x |> Json_schema.Helpers.ref
   let callback_ref x = "#/components/callbacks/" ^ x |> Json_schema.Helpers.ref
 
+  let validate_operation_id id a =
+    Option.fold ~init:a.operation_ids
+      ~f:(fun ids id ->
+        if List.mem ~equal:( = ) a.operation_ids id then
+          failwith ("Attempted to register duplicate operation id: " ^ id)
+        else id :: ids)
+      id
+
+  let validate_path path =
+    if Option.is_some path then failwith "Attempted to overwrite operiation"
+
   let get ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
       ?security ?servers path handler a =
     let orig_path = path in
     let path, pathps = rewrite_path path in
+    let operation_ids = validate_operation_id operation_id a in
     let p =
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    validate_path p.get;
     let p =
       {
         p with
@@ -238,6 +261,8 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.get orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
   let default_request_body =
@@ -250,12 +275,14 @@ module Make (Config : Config_Type) = struct
   let post ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
       ?security ?servers path handler a =
+    let operation_ids = validate_operation_id operation_id a in
     let orig_path = path in
     let path, pathps = rewrite_path path in
     let p =
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    validate_path p.post;
     let p =
       {
         p with
@@ -273,6 +300,8 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.post orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
   let delete ?tags ?summary ?description ?external_docs ?operation_id
@@ -284,6 +313,8 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    let operation_ids = validate_operation_id operation_id a in
+    validate_path p.delete;
     let p =
       {
         p with
@@ -300,6 +331,8 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.delete orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
   let put ?tags ?summary ?description ?external_docs ?operation_id
@@ -307,10 +340,12 @@ module Make (Config : Config_Type) = struct
       ?security ?servers path handler a =
     let orig_path = path in
     let path, pathps = rewrite_path path in
+    let operation_ids = validate_operation_id operation_id a in
     let p =
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    validate_path p.put;
     let p =
       {
         p with
@@ -328,6 +363,8 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.put orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
   let options ?tags ?summary ?description ?external_docs ?operation_id
@@ -335,10 +372,12 @@ module Make (Config : Config_Type) = struct
       ?security ?servers path handler a =
     let orig_path = path in
     let path, pathps = rewrite_path path in
+    let operation_ids = validate_operation_id operation_id a in
     let p =
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    validate_path p.options;
     let p =
       {
         p with
@@ -355,17 +394,21 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.options orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
   let head ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
       ?security ?servers path handler a =
+    let operation_ids = validate_operation_id operation_id a in
     let orig_path = path in
     let path, pathps = rewrite_path path in
     let p =
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    validate_path p.head;
     let p =
       {
         p with
@@ -382,17 +425,21 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.head orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
   let patch ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
       ?security ?servers path handler a =
+    let operation_ids = validate_operation_id operation_id a in
     let orig_path = path in
     let path, pathps = rewrite_path path in
     let p =
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
+    validate_path p.patch;
     let p =
       {
         p with
@@ -409,9 +456,11 @@ module Make (Config : Config_Type) = struct
     {
       spec = { a.spec with paths };
       routes = a.routes @ [Config.patch orig_path handler];
+      operation_ids;
+      schemas = a.schemas;
     }
 
-  let build ?(version="3") router =
+  let build ?(version = "3") router =
     router.routes
     @ [
         Config.json_route (Spec.yojson_of_t router.spec |> Yojson.Safe.to_string);
@@ -450,7 +499,8 @@ module Make (Config : Config_Type) = struct
   </body>
 </html>
 |}
-             router.spec.info.title version version Config.json_path Config.doc_path);
+             router.spec.info.title version version Config.json_path
+             Config.doc_path);
       ]
     |> Config.build_routes
 end

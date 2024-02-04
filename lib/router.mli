@@ -21,6 +21,8 @@ module Make : functor (Config : Config_Type) -> sig
   type t = {
     spec : Spec.t;
     routes : Config.route list;
+    schemas: string list;
+    operation_ids: string list;
   }
 
   val empty : t
