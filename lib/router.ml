@@ -232,7 +232,7 @@ module Make (Config : Config_Type) = struct
       id
 
   let validate_path path =
-    if Option.is_some path then failwith "Attempted to overwrite operiation"
+    if Option.is_some path then failwith "Attempted to overwrite operation"
 
   let get ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
