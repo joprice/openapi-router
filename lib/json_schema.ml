@@ -152,6 +152,7 @@ type schema = {
   all_of : schema or_ref list option; [@key "allOf"] [@yojson.option]
   any_of : schema or_ref list option; [@key "anyOf"] [@yojson.option]
   one_of : schema or_ref list option; [@key "oneOf"] [@yojson.option]
+  discriminator : any option; [@yojson.option]
 }
 [@@deriving make, show, yojson] [@@yojson.allow_extra_fields]
 
