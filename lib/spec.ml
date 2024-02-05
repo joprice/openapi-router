@@ -79,6 +79,7 @@ type link_object = {
 type header_object = {
   description : string option; [@yojson.option]
   required : bool option; [@yojson.option]
+  schema : schema or_ref option; [@yojson.option]
   deprecated : bool option; [@yojson.option]
   allow_empty_value : bool option; [@key "allowEmptyValue"] [@yojson.option]
 }
