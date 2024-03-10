@@ -265,13 +265,6 @@ module Make (Config : Config_Type) = struct
       schemas = a.schemas;
     }
 
-  let default_request_body =
-    let open Json_schema in
-    let open Spec in
-    let mt = make_media_type_object ~schema:(Obj (make_schema ())) () in
-    Spec.make_request_body_object ~content:[("text/plain", mt)] () |> fun o ->
-    Obj o
-
   let post ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
       ?security ?servers path handler a =
@@ -291,8 +284,7 @@ module Make (Config : Config_Type) = struct
             (Spec.make_operation_object ?tags ?summary ?description
                ?external_docs ?operation_id
                ~parameters:(merge_parameters parameters pathps)
-               ~request_body:
-                 (Option.value request_body ~default:default_request_body)
+               ?request_body
                ~responses ?callbacks ?deprecated ?security ?servers ());
       }
     in
@@ -354,8 +346,7 @@ module Make (Config : Config_Type) = struct
             (Spec.make_operation_object ?tags ?summary ?description
                ?external_docs ?operation_id
                ~parameters:(merge_parameters parameters pathps)
-               ~request_body:
-                 (Option.value request_body ~default:default_request_body)
+               ?request_body
                ~responses ?callbacks ?deprecated ?security ?servers ());
       }
     in

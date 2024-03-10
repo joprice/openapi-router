@@ -21,8 +21,8 @@ module Make : functor (Config : Config_Type) -> sig
   type t = {
     spec : Spec.t;
     routes : Config.route list;
-    schemas: string list;
-    operation_ids: string list;
+    schemas : string list;
+    operation_ids : string list;
   }
 
   val empty : t
@@ -118,8 +118,6 @@ module Make : functor (Config : Config_Type) -> sig
     Config.handler ->
     t ->
     t
-
-  val default_request_body : Spec.request_body_object Json_schema.or_ref
 
   val post :
     ?tags:string list ->
