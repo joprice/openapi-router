@@ -231,8 +231,9 @@ module Make (Config : Config_Type) = struct
         else id :: ids)
       id
 
-  let validate_path path =
-    if Option.is_some path then failwith "Attempted to overwrite operation"
+  let validate_path ~path ~method_ (operation : Spec.operation_object option) =
+    if operation |> Option.is_some then
+      failwith ("Attempted to overwrite operation: " ^ path ^ " " ^ method_)
 
   let get ?tags ?summary ?description ?external_docs ?operation_id
       ?(parameters = []) ?request_body ?(responses = []) ?callbacks ?deprecated
@@ -244,7 +245,7 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
-    validate_path p.get;
+    validate_path ~path ~method_:"GET" p.get;
     let p =
       {
         p with
@@ -275,7 +276,7 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
-    validate_path p.post;
+    validate_path ~path ~method_:"POST" p.post;
     let p =
       {
         p with
@@ -284,8 +285,8 @@ module Make (Config : Config_Type) = struct
             (Spec.make_operation_object ?tags ?summary ?description
                ?external_docs ?operation_id
                ~parameters:(merge_parameters parameters pathps)
-               ?request_body
-               ~responses ?callbacks ?deprecated ?security ?servers ());
+               ?request_body ~responses ?callbacks ?deprecated ?security
+               ?servers ());
       }
     in
     let paths = List.Assoc.add ~equal:( = ) a.spec.paths path p in
@@ -306,7 +307,7 @@ module Make (Config : Config_Type) = struct
       |> Option.value ~default:(Spec.make_path_object ())
     in
     let operation_ids = validate_operation_id operation_id a in
-    validate_path p.delete;
+    validate_path ~path ~method_:"DELET" p.delete;
     let p =
       {
         p with
@@ -337,7 +338,7 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
-    validate_path p.put;
+    validate_path ~path ~method_:"PUT" p.put;
     let p =
       {
         p with
@@ -346,8 +347,8 @@ module Make (Config : Config_Type) = struct
             (Spec.make_operation_object ?tags ?summary ?description
                ?external_docs ?operation_id
                ~parameters:(merge_parameters parameters pathps)
-               ?request_body
-               ~responses ?callbacks ?deprecated ?security ?servers ());
+               ?request_body ~responses ?callbacks ?deprecated ?security
+               ?servers ());
       }
     in
     let paths = List.Assoc.add ~equal:( = ) a.spec.paths path p in
@@ -368,7 +369,7 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
-    validate_path p.options;
+    validate_path ~path ~method_:"OPTIONS" p.options;
     let p =
       {
         p with
@@ -399,7 +400,7 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
-    validate_path p.head;
+    validate_path ~path ~method_:"HEAD" p.head;
     let p =
       {
         p with
@@ -430,7 +431,7 @@ module Make (Config : Config_Type) = struct
       List.Assoc.find ~equal:( = ) a.spec.paths path
       |> Option.value ~default:(Spec.make_path_object ())
     in
-    validate_path p.patch;
+    validate_path ~path ~method_:"PATCH" p.patch;
     let p =
       {
         p with
